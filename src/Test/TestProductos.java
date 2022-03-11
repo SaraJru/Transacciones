@@ -1,21 +1,27 @@
 package Test;
 
+import Datos.conexion;
 import Datos.vproducto;
 import Domain.Productos;
 import java.util.List;
 import javax.swing.JOptionPane;
+import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TestProductos extends javax.swing.JFrame {
-    
+
     vproducto productosv = new vproducto();
     Productos productos;
-    
+    Connection Conexion = null;
+    conexion instanciaMysql = conexion.getInstance();
+
     public TestProductos() {
         initComponents();
         this.setTitle("Productos");
         this.setLocationRelativeTo(null);
     }
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -224,59 +230,135 @@ public class TestProductos extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneliminarActionPerformed
-        int Id_Producto = Integer.parseInt(txtidp.getText());
-        
-        productos = new Productos(Id_Producto);
-        
-        productosv.eliminar(productos);
-        JOptionPane.showMessageDialog(null,"Producto eliminado");
-        limpiarCajas();
+        try {
+            Conexion = instanciaMysql.conectar();
+
+            if (Conexion.getAutoCommit()) {
+                Conexion.setAutoCommit(false);
+            }
+
+            int Id_Producto = Integer.parseInt(txtidp.getText());
+
+            productos = new Productos(Id_Producto);
+
+            productosv.eliminar(productos);
+            Conexion.commit();
+
+            JOptionPane.showMessageDialog(null, "Producto eliminado");
+            limpiarCajas();
+
+        } catch (SQLException error) {
+            System.out.println(error);
+            try {
+                Conexion.rollback();
+            } catch (SQLException ex) {
+                System.out.println(ex);
+            }
+        }
     }//GEN-LAST:event_btneliminarActionPerformed
 
     private void btningresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btningresarActionPerformed
-        String Nombre = txtnombre.getText();
-        double Precio = Double.parseDouble(txtprecio.getText());
-        int Existencias = Integer.parseInt(txtexistencias.getText());
-        
-        productos = new Productos(Nombre, Precio, Existencias);
-        productosv.insertar(productos);
-        JOptionPane.showMessageDialog(null, "Producto registrado");
+        try {
+            Conexion = instanciaMysql.conectar();
+
+            if (Conexion.getAutoCommit()) {
+                Conexion.setAutoCommit(false);
+            }
+
+            //vproducto vproductoConexion = new vproducto(Conexion);
+            String Nombre = txtnombre.getText();
+            double Precio = Double.parseDouble(txtprecio.getText());
+            int Existencias = Integer.parseInt(txtexistencias.getText());
+
+            productos = new Productos(Nombre, Precio, Existencias);
+            productosv.insertar(productos);
+            Conexion.commit();
+            JOptionPane.showMessageDialog(null, "Producto registrado");
+            limpiarCajas();
+
+        } catch (SQLException error) {
+            System.out.println(error);
+            try {
+                Conexion.rollback();
+            } catch (SQLException ex) {
+                System.out.println(ex);
+            }
+        }
+
+
     }//GEN-LAST:event_btningresarActionPerformed
 
     private void btnmostrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnmostrarActionPerformed
-        listadatos.setText("");
-        List<Productos> productos = productosv.listar();
-        for (Productos objeto : productos) {
-            listadatos.append(objeto.toString());
+
+        try {
+            Conexion = instanciaMysql.conectar();
+
+            if (Conexion.getAutoCommit()) {
+                Conexion.setAutoCommit(false);
+            }
+
+            listadatos.setText("");
+            List<Productos> productos = productosv.listar();
+            productos.forEach(objeto -> {
+                listadatos.append(objeto.toString());
+            });
+
+            Conexion.commit();
+        } catch (SQLException error) {
+            System.out.println(error);
+            try {
+                Conexion.rollback();
+            } catch (SQLException ex) {
+                System.out.println(ex);
+            }
         }
-        
+
 
     }//GEN-LAST:event_btnmostrarActionPerformed
 
     private void btneditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneditarActionPerformed
-        int Id_Producto = Integer.parseInt(txtidp.getText());
-        String Nombre = txtnombre.getText();
-        double Precio = Double.parseDouble(txtprecio.getText());
-        int Existencias = Integer.parseInt(txtexistencias.getText());
-        
-        productos = new Productos(Id_Producto,Nombre,Precio,Existencias);
-        productosv.modificar(productos);
-        JOptionPane.showMessageDialog(null, "Producto Modificado");
-        limpiarCajas();
+
+        try {
+            Conexion = instanciaMysql.conectar();
+            if (Conexion.getAutoCommit()) {
+                Conexion.setAutoCommit(false);
+            }
+
+            int Id_Producto = Integer.parseInt(txtidp.getText());
+            String Nombre = txtnombre.getText();
+            double Precio = Double.parseDouble(txtprecio.getText());
+            int Existencias = Integer.parseInt(txtexistencias.getText());
+
+            productos = new Productos(Id_Producto, Nombre, Precio, Existencias);
+            productosv.modificar(productos);
+            Conexion.commit();
+            JOptionPane.showMessageDialog(null, "Producto Modificado");
+            limpiarCajas();
+
+        } catch (SQLException error) {
+            System.out.println(error);
+            try {
+                Conexion.rollback();
+            } catch (SQLException ex) {
+                System.out.println(ex);
+            }
+        }
+
+
     }//GEN-LAST:event_btneditarActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         listadatos.setText("");
     }//GEN-LAST:event_jButton1ActionPerformed
-    
+
     private void limpiarCajas() {
         txtnombre.setText("");
         txtprecio.setText("");
         txtexistencias.setText("");
         txtidp.setText("");
-        
+
     }
-    
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">

@@ -13,11 +13,24 @@ import java.sql.*;
 public class vproducto {
 
     conexion instanciaMysql = conexion.getInstance();
+    private Connection conexionTransaccional;
+    
     private static final String SQL_SELECT = "select * from productos";
     private static final String SQL_INSERT = "insert into productos (Nombre,Precio,Existencias) values (?,?,?)";
     private static final String SQL_UPDATE = "update productos set Nombre = ?,Precio= ?,Existencias = ? where Id_Producto = ?";
     private static final String SQL_DELETE = "delete from productos where Id_Producto = ?";
 
+    public vproducto(){
+        
+        
+    }
+    
+    public vproducto(Connection conexionTransaccional){
+        this.conexionTransaccional = conexionTransaccional;
+        
+    }
+    
+    
     public List<Productos> listar() {
         Connection conexion = null;
         PreparedStatement consultaPreparada = null;
@@ -25,8 +38,9 @@ public class vproducto {
         List<Productos> producto = new ArrayList<>();
         Productos productos;
 
-        try {
-            conexion = instanciaMysql.conectar();
+        try {/*
+            conexion = instanciaMysql.conectar(); conexion normal*/
+            conexion = this.conexionTransaccional != null ? this.conexionTransaccional : instanciaMysql.conectar();
             consultaPreparada = conexion.prepareStatement(SQL_SELECT);
             resultado = consultaPreparada.executeQuery();
 
@@ -45,7 +59,11 @@ public class vproducto {
         } finally {
             instanciaMysql.cerrarresultado(resultado);
             instanciaMysql.cerrarStatement(consultaPreparada);
-            instanciaMysql.desconectar(conexion);
+            //instanciaMysql.desconectar(conexion);
+            
+            if(this.conexionTransaccional == null){
+                instanciaMysql.desconectar(conexion);
+            }
         }
         return producto;
 
@@ -58,7 +76,7 @@ public class vproducto {
         int registros = 0;
 
         try {
-            conexion = instanciaMysql.conectar();
+            conexion = this.conexionTransaccional != null ? this.conexionTransaccional : instanciaMysql.conectar();
             consultaPreparada = conexion.prepareStatement(SQL_INSERT);
 
             consultaPreparada.setString(1, productos.getNombre());
@@ -71,7 +89,10 @@ public class vproducto {
 
         } finally {
             instanciaMysql.cerrarStatement(consultaPreparada);
-            instanciaMysql.desconectar(conexion);
+            //instanciaMysql.desconectar(conexion);
+             if(this.conexionTransaccional == null){
+                instanciaMysql.desconectar(conexion);
+            }
         }
         return registros;
 
@@ -84,7 +105,7 @@ public class vproducto {
         int registros = 0;
 
         try {
-            conexion = instanciaMysql.conectar();
+            conexion = this.conexionTransaccional != null ? this.conexionTransaccional : instanciaMysql.conectar();
             consultaPreparada = conexion.prepareStatement(SQL_UPDATE);
 
             consultaPreparada.setString(1, productos.getNombre());
@@ -99,7 +120,10 @@ public class vproducto {
 
         } finally {
             instanciaMysql.cerrarStatement(consultaPreparada);
-            instanciaMysql.desconectar(conexion);
+            //instanciaMysql.desconectar(conexion);
+             if(this.conexionTransaccional == null){
+                instanciaMysql.desconectar(conexion);
+            }
         }
         return registros;
 
@@ -113,7 +137,7 @@ public class vproducto {
         int registros = 0;
 
         try {
-            conexion = instanciaMysql.conectar();
+            conexion = this.conexionTransaccional != null ? this.conexionTransaccional : instanciaMysql.conectar();
             consultaPreparada = conexion.prepareStatement(SQL_DELETE);
 
             consultaPreparada.setInt(1, productos.getId_Producto());
@@ -124,8 +148,12 @@ public class vproducto {
 
         } finally {
             instanciaMysql.cerrarStatement(consultaPreparada);
-            instanciaMysql.desconectar(conexion);
+            //instanciaMysql.desconectar(conexion);
+            if(this.conexionTransaccional == null){
+                instanciaMysql.desconectar(conexion);
+            }
         }
+        
         return registros;
 
     }
